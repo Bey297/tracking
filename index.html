@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GPS Sharing</title>
+</head>
+<body>
+    <h1>GPS Location Sharing</h1>
+    <p>Website GPS berhasil dibuka!</p>
+
+    <button onclick="getGPS()">Bagikan Lokasi Saya</button>
+
+    <p id="status">Menunggu izin GPS...</p>
+
+    <script>
+    function getGPS() {
+        if (!navigator.geolocation) {
+            alert("GPS tidak didukung browser.");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                document.getElementById("status").innerHTML =
+                    "Latitude: " + lat +
+                    "<br>Longitude: " + lon +
+                    "<br><a target='_blank' href='https://www.openstreetmap.org/?mlat=" +
+                    lat + "&mlon=" + lon + "'>Lihat Peta</a>";
+            },
+            function(error) {
+                document.getElementById("status").innerText =
+                    "Gagal mengambil lokasi: " + error.message;
+            }
+        );
+    }
+    </script>
+</body>
+</html>
