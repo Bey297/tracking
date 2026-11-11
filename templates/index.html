@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GPS Sharing</title>
+</head>
+<body>
+    <h2>GPS Location Sharing</h2>
+    <p>Buat sesi berbagi lokasi GPS.</p>
+
+    <button onclick="createSession()">
+        Buat Tautan GPS
+    </button>
+
+    <div id="result"></div>
+
+    <script>
+    async function createSession() {
+        const response = await fetch("/create", {
+            method: "POST"
+        });
+
+        const data = await response.json();
+
+        document.getElementById("result").innerHTML = `
+            <p>Link untuk dibagikan:</p>
+            <a href="${data.share_url}">${data.share_url}</a>
+            <p>Link untuk melihat lokasi:</p>
+            <a href="${data.view_url}">${data.view_url}</a>
+        `;
+    }
+    </script>
+</body>
+</html>
