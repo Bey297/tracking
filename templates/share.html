@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bagikan GPS</title>
+</head>
+<body>
+    <h2>Bagikan Lokasi GPS</h2>
+    <p>Tekan tombol untuk mulai membagikan lokasi Anda.</p>
+
+    <button onclick="startGPS()">Mulai Berbagi Lokasi</button>
+    <button onclick="stopGPS()">Berhenti Berbagi</button>
+
+    <p id="status">Belum dimulai.</p>
+
+    <script>
+    const token = "{{ token }}";
+    let watchId = null;
+
+    function startGPS() {
+        if (!navigator.geolocation) {
+            alert("GPS tidak didukung browser.");
+            return;
+        }
+
+        watchId = navigator.geolocation.watchPosition(
+            async function(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                const response = await fetch("/update/" + token, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        latitude: latitude,
+                        longitude: longitude
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById("status").innerText =
+                        "Lokasi berhasil dibagikan.";
+                } else {
+                    document.getElementById("status").innerText =
+                        "Sesi sudah tidak aktif.";
+                    stopGPS();
+                }
+            },
+            function(error) {
+                document.getElementById("status").innerText =
+                    "Gagal mengambil GPS: " + error.message;
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0
+            }
+        );
+    }
+
+    async function stopGPS() {
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+
+        await fetch("/stop/" + token, {
+            method: "POST"
+        });
+
+        document.getElementById("status").innerText =
+            "Berbagi lokasi dihentikan.";
+    }
+    </script>
+</body>
+</html>
