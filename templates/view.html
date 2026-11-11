@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lihat Lokasi GPS</title>
+
+    <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <style>
+        #map {
+            height: 450px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h2>Lokasi GPS</h2>
+    <p id="status">Menunggu lokasi...</p>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+    const token = "{{ token }}";
+
+    const map = L.map("map").setView([-2.5, 118], 5);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+
+    let marker = null;
+
+    async function getLocation() {
+        try {
+            const response = await fetch("/location/" + token);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error("Tautan tidak valid.");
+            }
+
+            if (!data.active) {
+                document.getElementById("status").innerText =
+                    "Pemilik telah menghentikan berbagi lokasi.";
+                return;
+            }
+
+            if (data.latitude === null) {
+                document.getElementById("status").innerText =
+                    "Menunggu GPS dibagikan...";
+                return;
+            }
+
+            const lat = data.latitude;
+            const lon = data.longitude;
+
+            if (!marker) {
+                marker = L.marker([lat, lon]).addTo(map);
+                map.setView([lat, lon], 16);
+            } else {
+                marker.setLatLng([lat, lon]);
+            }
+
+            document.getElementById("status").innerText =
+                "Lokasi diperbarui: " + data.updated_at;
+
+        } catch (error) {
+            document.getElementById("status").innerText =
+                error.message;
+        }
+    }
+
+    getLocation();
+    setInterval(getLocation, 5000);
+    </script>
+</body>
+</html>
